@@ -61,7 +61,8 @@ const shoppingListeners = {
     delete STATE.items[itemIndex];
     // Render new view
     renderShoppingList();
-  }
+  },
+  handleItemEdit: function(e) {}
 };
 
 
@@ -72,12 +73,19 @@ const bindShoppingListeners = function() {
   $('.js-shopping-list').on('click', '.js-item-toggle',shoppingListeners.handleItemCheckedState);
   // handleItemDelete
   $('.js-shopping-list').on('click', '.js-item-delete',shoppingListeners.handleItemDelete);
+  // handleItemEdit
+  $('.js-shopping-list').on('click', '.js-item-delete',shoppingListeners.handleItemEdit);
 };
 
 // Users should be able to:
     // Add an item to the shopping list
     // Check an item on the shopping list
     // Remove an item from the shopping list
+// ------------------------------------------------------------------------
+    // Press a switch/checkbox to toggle between displaying all items or displaying only items that are unchecked
+    // Type in a search term and the displayed list will be filtered by item names only containing that search term
+    // Edit the title of an item
+
 function handleShoppingList() {
   renderShoppingList();
   bindShoppingListeners();
