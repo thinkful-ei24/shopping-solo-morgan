@@ -1,14 +1,13 @@
-'use strict';
+const STATE = {
+  items: [
+    {name: "apples", checked: false},
+    {name: "oranges", checked: false},
+    {name: "milk", checked: true},
+    {name: "bread", checked: false}
+  ]
+};
 
-const STORE = [
-  {name: "apples", checked: false},
-  {name: "oranges", checked: false},
-  {name: "milk", checked: true},
-  {name: "bread", checked: false}
-];
-
-
-function generateItemElement(item, itemIndex, template) {
+const generateListItemHTML = function(item, itemIndex) {
   return `
     <li class="js-item-index-element" data-item-index="${itemIndex}">
       <span class="shopping-item js-shopping-item ${item.checked ? "shopping-item__checked" : ''}">${item.name}</span>
@@ -21,83 +20,67 @@ function generateItemElement(item, itemIndex, template) {
         </button>
       </div>
     </li>`;
-}
+};
 
+const renderShoppingList = function() {
+  // Iterate through our state object and generate HTML
+  let items = STATE.items.map(generateListItemHTML).join('');
+  $('.js-shopping-list').html(items);
+};
 
-function generateShoppingItemsString(shoppingList) {
-  console.log("Generating shopping list element");
-
-  const items = shoppingList.map((item, index) => generateItemElement(item, index));
-  
-  return items.join("");
-}
-
-
-function renderShoppingList() {
-  // render the shopping list in the DOM
-  console.log('`renderShoppingList` ran');
-  const shoppingListItemsString = generateShoppingItemsString(STORE);
-
-  // insert that HTML into the DOM
-  $('.js-shopping-list').html(shoppingListItemsString);
-}
-
-
-function addItemToShoppingList(itemName) {
-  console.log(`Adding "${itemName}" to shopping list`);
-  STORE.push({name: itemName, checked: false});
-}
-
-function handleNewItemSubmit() {
-  $('#js-shopping-list-form').submit(function(event) {
-    event.preventDefault();
-    console.log('`handleNewItemSubmit` ran');
-    const newItemName = $('.js-shopping-list-entry').val();
-    $('.js-shopping-list-entry').val('');
-    addItemToShoppingList(newItemName);
+const shoppingListeners = {
+  helpers: {
+    fetchItemIndex: function(listItemNode) {
+      return $(listItemNode).closest('li').data('itemIndex');
+    }
+  },
+  // handleUserInput
+  handleUserInput: function(e) {    
+    // fetch user input
+    e.preventDefault();
+    const userInputField = $('.js-shopping-list-entry');
+    const userInput = userInputField.val();
+    userInputField.val('');
+    // push input to database
+    STATE.items.push({ name: userInput, checked: false });
+    // render new state
     renderShoppingList();
-  });
-}
-
-function toggleCheckedForListItem(itemIndex) {
-  console.log("Toggling checked property for item at index " + itemIndex);
-  STORE[itemIndex].checked = !STORE[itemIndex].checked;
-}
-
-
-function getItemIndexFromElement(item) {
-  const itemIndexString = $(item)
-    .closest('.js-item-index-element')
-    .attr('data-item-index');
-  return parseInt(itemIndexString, 10);
-}
-
-function handleItemCheckClicked() {
-  $('.js-shopping-list').on('click', `.js-item-toggle`, event => {
-    console.log('`handleItemCheckClicked` ran');
-    const itemIndex = getItemIndexFromElement(event.currentTarget);
-    toggleCheckedForListItem(itemIndex);
+  },
+  handleItemCheckedState: function(e) {
+    // Grab item index from the DOM
+    let itemIndex = this.helpers.fetchItemIndex(e.currentTarget);
+    // Toggle item's checked state
+    STATE.items[itemIndex].checked = !STATE.items[itemIndex].checked;
+    // Render new view
     renderShoppingList();
-  });
-}
+  },
+  handleItemDelete: function(e) {
+    // Grab item index from the DOM
+    let itemIndex = this.helpers.fetchItemIndex(e.currentTarget);
+    // Delete item from database
+    delete STATE.items[itemIndex];
+    // Render new view
+    renderShoppingList();
+  }
+};
 
 
-function handleDeleteItemClicked() {
-  // this function will be responsible for when users want to delete a shopping list
-  // item
-  console.log('`handleDeleteItemClicked` ran')
-}
+const bindShoppingListeners = function() {
+  // handleUserInput
+  $('#js-shopping-list-form').on('submit', shoppingListeners.handleUserInput);
+  // handleItemCheckedState
+  $('.js-shopping-list').on('click', '.js-item-toggle',shoppingListeners.handleItemCheckedState);
+  // handleItemDelete
+  $('.js-shopping-list').on('click', '.js-item-delete',shoppingListeners.handleItemDelete);
+};
 
-// this function will be our callback when the page loads. it's responsible for
-// initially rendering the shopping list, and activating our individual functions
-// that handle new item submission and user clicks on the "check" and "delete" buttons
-// for individual shopping list items.
+// Users should be able to:
+    // Add an item to the shopping list
+    // Check an item on the shopping list
+    // Remove an item from the shopping list
 function handleShoppingList() {
   renderShoppingList();
-  handleNewItemSubmit();
-  handleItemCheckClicked();
-  handleDeleteItemClicked();
+  bindShoppingListeners();
 }
 
-// when the page loads, call `handleShoppingList`
 $(handleShoppingList);
