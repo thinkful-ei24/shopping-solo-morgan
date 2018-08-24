@@ -1,14 +1,5 @@
 'use strict';
 
-// `STORE` is responsible for storing the underlying data
-// that our app needs to keep track of in order to work.
-//
-// for a shopping list, our data model is pretty simple.
-// we just have an array of shopping list items. each one
-// is an object with a `name` and a `checked` property that
-// indicates if it's checked off or not.
-// we're pre-adding items to the shopping list so there's
-// something to see when the page first loads.
 const STORE = [
   {name: "apples", checked: false},
   {name: "oranges", checked: false},
@@ -16,7 +7,8 @@ const STORE = [
   {name: "bread", checked: false}
 ];
 
-function generateShoppingItemsString(item, itemIndex) {
+
+function generateItemElement(item, itemIndex, template) {
   return `
     <li class="js-item-index-element" data-item-index="${itemIndex}">
       <span class="shopping-item js-shopping-item ${item.checked ? "shopping-item__checked" : ''}">${item.name}</span>
@@ -29,28 +21,64 @@ function generateShoppingItemsString(item, itemIndex) {
         </button>
       </div>
     </li>`;
-};
+}
+
+
+function generateShoppingItemsString(shoppingList) {
+  console.log("Generating shopping list element");
+
+  const items = shoppingList.map((item, index) => generateItemElement(item, index));
+  
+  return items.join("");
+}
 
 
 function renderShoppingList() {
-// For each item in STORE, generate a string representing an <li> with:
-  // the item name rendered as inner text
-  // the item's index in the STORE set as a data attribute on the <li> (more on that in a moment)
-  // the item's checked state (true or false) rendered as the presence or absence of a CSS class for indicating checked items (specifically, .shopping-item__checked from index.css)
-  const renderedList = STORE.map(generateShoppingItemsString);
+  // render the shopping list in the DOM
+  console.log('`renderShoppingList` ran');
+  const shoppingListItemsString = generateShoppingItemsString(STORE);
+
+  // insert that HTML into the DOM
+  $('.js-shopping-list').html(shoppingListItemsString);
 }
 
+
+function addItemToShoppingList(itemName) {
+  console.log(`Adding "${itemName}" to shopping list`);
+  STORE.push({name: itemName, checked: false});
+}
 
 function handleNewItemSubmit() {
-  // this function will be responsible for when users add a new shopping list item
-  console.log('`handleNewItemSubmit` ran');
+  $('#js-shopping-list-form').submit(function(event) {
+    event.preventDefault();
+    console.log('`handleNewItemSubmit` ran');
+    const newItemName = $('.js-shopping-list-entry').val();
+    $('.js-shopping-list-entry').val('');
+    addItemToShoppingList(newItemName);
+    renderShoppingList();
+  });
+}
+
+function toggleCheckedForListItem(itemIndex) {
+  console.log("Toggling checked property for item at index " + itemIndex);
+  STORE[itemIndex].checked = !STORE[itemIndex].checked;
 }
 
 
+function getItemIndexFromElement(item) {
+  const itemIndexString = $(item)
+    .closest('.js-item-index-element')
+    .attr('data-item-index');
+  return parseInt(itemIndexString, 10);
+}
+
 function handleItemCheckClicked() {
-  // this function will be responsible for when users click the "check" button on
-  // a shopping list item.
-  console.log('`handleItemCheckClicked` ran');
+  $('.js-shopping-list').on('click', `.js-item-toggle`, event => {
+    console.log('`handleItemCheckClicked` ran');
+    const itemIndex = getItemIndexFromElement(event.currentTarget);
+    toggleCheckedForListItem(itemIndex);
+    renderShoppingList();
+  });
 }
 
 
@@ -69,7 +97,6 @@ function handleShoppingList() {
   handleNewItemSubmit();
   handleItemCheckClicked();
   handleDeleteItemClicked();
-
 }
 
 // when the page loads, call `handleShoppingList`
