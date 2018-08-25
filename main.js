@@ -70,7 +70,7 @@ const shoppingListeners = {
     }
   },
   // handleUserInput
-  handleUserInput: function(e) {    
+  handleAddItemInput: function(e) {    
     // fetch user input
     e.preventDefault();
     const userInputField = $('.js-shopping-list-entry');
@@ -110,8 +110,8 @@ const shoppingListeners = {
 
 
 const bindShoppingListeners = function() {
-  // handleUserInput
-  $('#js-shopping-list-form').on('submit', shoppingListeners.handleUserInput);
+  // handleAddItemInput
+  $('#js-shopping-list-form').on('submit', shoppingListeners.handleAddItemInput);
   // handleItemCompletedState
   $('.js-shopping-list').on('click', '.js-item-toggle',shoppingListeners.handleItemCompletedState);
   // handleItemDelete
@@ -120,6 +120,7 @@ const bindShoppingListeners = function() {
   $('#shopping-list-completed-toggler').on('change', '.js-display-completed-items', shoppingListeners.handleCompletedDisplayToggle);
   // handleItemEdit
   // $('.js-shopping-list').on('click', '.js-item-delete',shoppingListeners.handleItemEdit);
+  // handle
 };
 
 // Users should be able to:
