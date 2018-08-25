@@ -54,3 +54,11 @@ button:hover {
 .shopping-item__completed {
   text-decoration: line-through;
 }
+
+input {
+  margin-bottom: 10px;
+}
+
+input::placeholder {
+  font-style: italic;
+}

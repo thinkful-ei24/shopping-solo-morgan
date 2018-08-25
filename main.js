@@ -23,7 +23,7 @@ const generateListItemHTML = function(item, itemIndex) {
     </li>`;
 };
 
-const generateDisplayCompletedHTML = function() {
+const generateCompletedDisplayHTML = function() {
   return `
     <input class="js-display-completed-items" type="checkbox" name="shopping-list-display-completed" ${STATE.displayCompleted ? 'checked' : ''}>
     <label for="shopping-list-display-completed">Display completed items</label>
@@ -51,7 +51,7 @@ const generateUncompletedListItemHTML = function(html, item, itemIndex) {
 
 const renderShoppingList = function() {
   // Render display toggler
-  $('#shopping-list-completed-toggler').html(generateDisplayCompletedHTML());
+  $('#shopping-list-completed-toggler').html(generateCompletedDisplayHTML());
   // Render items
   let items = STATE.items;
   if (STATE.displayCompleted) {
@@ -102,7 +102,7 @@ const shoppingListeners = {
 
   handleItemEdit: function(e) {},
 
-  handleDisplayCompletedToggle: function(e) {
+  handleCompletedDisplayToggle: function(e) {
     STATE.displayCompleted = STATE.displayCompleted ? false : true;
     renderShoppingList();
   }
@@ -116,8 +116,8 @@ const bindShoppingListeners = function() {
   $('.js-shopping-list').on('click', '.js-item-toggle',shoppingListeners.handleItemCompletedState);
   // handleItemDelete
   $('.js-shopping-list').on('click', '.js-item-delete',shoppingListeners.handleItemDelete);
-  // handleDisplayCompletedToggle
-  $('#shopping-list-completed-toggler').on('change', '.js-display-completed-items', shoppingListeners.handleDisplayCompletedToggle);
+  // handleCompletedDisplayToggle
+  $('#shopping-list-completed-toggler').on('change', '.js-display-completed-items', shoppingListeners.handleCompletedDisplayToggle);
   // handleItemEdit
   // $('.js-shopping-list').on('click', '.js-item-delete',shoppingListeners.handleItemEdit);
 };
