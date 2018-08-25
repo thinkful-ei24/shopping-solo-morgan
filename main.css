@@ -27,6 +27,11 @@ button:hover {
   margin: 0 auto;
 }
 
+#shopping-list-completed-toggler {
+  display: block;
+  padding: 10px 0;
+}
+
 .shopping-list {
   list-style: none;
   padding-left: 0;
@@ -46,6 +51,6 @@ button:hover {
   margin-bottom: 15px;
 }
 
-.shopping-item__checked {
+.shopping-item__completed {
   text-decoration: line-through;
 }
