@@ -67,6 +67,9 @@ const shoppingListeners = {
   helpers: {
     fetchItemIndex: function(listItemNode) {
       return $(listItemNode).closest('li').data('itemIndex');
+    },
+    fetchUserInput: function() {
+      
     }
   },
   // handleUserInput
@@ -105,6 +108,11 @@ const shoppingListeners = {
   handleCompletedDisplayToggle: function(e) {
     STATE.displayCompleted = STATE.displayCompleted ? false : true;
     renderShoppingList();
+  },
+
+  handleSearchInput: function(e) {
+    e.preventDefault();
+    console.log('hi!');
   }
 };
 
@@ -120,7 +128,8 @@ const bindShoppingListeners = function() {
   $('#shopping-list-completed-toggler').on('change', '.js-display-completed-items', shoppingListeners.handleCompletedDisplayToggle);
   // handleItemEdit
   // $('.js-shopping-list').on('click', '.js-item-delete',shoppingListeners.handleItemEdit);
-  // handle
+  // handleSearchInput
+  $('#js-shopping-list-search').on('submit', shoppingListeners.handleSearchInput);
 };
 
 // Users should be able to:
