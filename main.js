@@ -190,41 +190,13 @@ const listFilteringListeners = {
     }
     // Renders shopping list with new state flag
     renderShoppingList();
-  },
-
-  // handleUserSearch: function(e) {
-  //   // Grab user input
-  //   e.preventDefault();
-  //   let userInputField = $('.js-shopping-list-search');
-  //   let userInput = shoppingEventHelpers.fetchUserInput(userInputField);
-  //   // Store user input at STORE.currentSearch
-  //   STORE.currentSearch = userInput;
-  //   // Set the new state
-  //   switch(STORE.state) {
-  //     case 'all':
-  //     case 'search':
-  //       STORE.state = 'search';
-  //       break;
-  //     case 'active':
-  //     case 'searchActive':
-  //       STORE.state = 'searchActive';
-  //       break;
-  //     case 'completed':
-  //     case 'searchCompleted':
-  //       STORE.state = 'searchCompleted';
-  //       break;
-  //   }
-  //   // render new view
-  //   renderShoppingList();
-  // }
+  }
 };
 
 
 const bindListFilteringListeners = function() {
   // handleDisplayFilterToggle
   $('#js-shopping-list-filter').on('click', '.js-filter-radio', listFilteringListeners.handleDisplayFilterToggle);
-  // // handleUserSearch
-  // $('#js-shopping-list-search').on('submit', listFilteringListeners.handleUserSearch);
 };
 
 const handleShoppingList = function() {
