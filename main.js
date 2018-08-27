@@ -1,10 +1,10 @@
 // POSSIBLE STATES:
-  // `all`: display all items
-  // `checked`/: display checked only
-  // `unchecked`: display unchecked only
-  // `search`: filtered by search term
-  // `checkedSearch`: search through unchecked items
-  // `uncheckedSearch`: search through checked items
+  // `all`
+  // `search`
+  // `active`
+  // `searchActive`
+  // `completed`
+  // `searchCompleted`
 
 // POSSIBLE ACTIONS:
   // Add/Remove/Edit list item
@@ -52,10 +52,26 @@ const renderListItems = function() {
       items = items.map(generateListItemHTML).join('');
       list.html(items);
       break;
+    case 'search':
+      items = 
+      items
+        .filter(item => item.name.includes(STORE.currentSearch))
+        .map(generateListItemHTML)
+        .join('');
+      list.html(items);
+      break;
     case 'active':
       items = 
         items
           .filter(item => item.completed === false)
+          .map(generateListItemHTML)
+          .join('');
+      list.html(items);
+      break;
+    case 'searchActive':
+        items = 
+        items
+          .filter(item => item.completed === false && item.name.includes(STORE.currentSearch))
           .map(generateListItemHTML)
           .join('');
       list.html(items);
@@ -68,23 +84,7 @@ const renderListItems = function() {
           .join('');
       list.html(items);
       break;
-    case 'search':
-      items = 
-      items
-        .filter(item => item.name.includes(STORE.currentSearch))
-        .map(generateListItemHTML)
-        .join('');
-      list.html(items);
-      break;
-    case 'activeSearch':
-      items = 
-      items
-        .filter(item => item.completed === false && item.name.includes(STORE.currentSearch))
-        .map(generateListItemHTML)
-        .join('');
-    list.html(items);
-    break;
-    case 'completedSearch':
+    case 'searchCompleted':
       items = 
       items
         .filter(item => item.completed === true && item.name.includes(STORE.currentSearch))
@@ -106,11 +106,11 @@ const renderDisplayToggler = function() {
       $(radioButtons).filter('#js-filter-all').prop('checked', true);
       break;
     case 'active':
-    case 'activeSearch':
+    case 'searchActive':
       $(radioButtons).filter('#js-filter-active').prop('checked', true);
       break;
     case 'completed':
-    case 'completedSearch':
+    case 'searchCompleted':
       $(radioButtons).filter('#js-filter-completed').prop('checked', true);
       break;
   }
@@ -190,6 +190,32 @@ const listFilteringListeners = {
     }
     // Renders shopping list with new state flag
     renderShoppingList();
+  },
+
+  handleSearchInput: function(e) {
+    // Grab user input
+    e.preventDefault();
+    const inputField = $('.js-shopping-list-search');
+    const userInput = shoppingEventHelpers.fetchUserInput(inputField);
+    // Store search input in STATE.currentSearch
+    STORE.currentSearch = userInput;
+    // Set the correct state
+    switch(STORE.state) {
+      case 'all':
+      case 'search':
+        STORE.state = 'search';
+        break;
+      case 'active':
+      case 'searchActive':
+        STORE.state = 'searchActive';
+        break;
+      case 'completed':
+      case 'searchCompleted':
+        STORE.state = 'searchCompleted';
+        break;
+    }
+    // Render new view
+    renderShoppingList();
   }
 };
 
@@ -197,6 +223,8 @@ const listFilteringListeners = {
 const bindListFilteringListeners = function() {
   // handleDisplayFilterToggle
   $('#js-shopping-list-filter').on('click', '.js-filter-radio', listFilteringListeners.handleDisplayFilterToggle);
+  // handleSearchInput
+  $('#js-shopping-list-search').on('submit',listFilteringListeners.handleSearchInput);
 };
 
 const handleShoppingList = function() {
