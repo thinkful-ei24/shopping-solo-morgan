@@ -6,6 +6,15 @@
   // `completed`
   // `searchCompleted`
 
+// switch(STORE.state) {
+//   case 'all':
+//   case 'search':
+//   case 'active':
+//   case 'searchActive':
+//   case 'completed':
+//   case 'searchCompleted':
+// }
+
 // POSSIBLE ACTIONS:
   // Add/Remove/Edit list item
   // Show all items
@@ -24,25 +33,30 @@ const STORE = {
   currentSearch: null
 };
 
+
+const renderShoppingList = function() {
+  renderDisplayToggler();
+  renderListItems();
+};
+
 const generateListItemHTML = function(item, itemIndex) {
   return `
     <li class="js-item-index-element" data-item-index="${itemIndex}">
       <span class="shopping-item js-shopping-item ${item.completed ? "shopping-item__completed" : ''}">${item.name}</span>
       <div class="shopping-item-controls">
         <button class="shopping-item-toggle js-item-toggle">
-            <span class="button-label">check</span>
+            <span class="button-label">Check</span>
+        </button>
+        <button class="shopping-item-edit js-item-edit">
+          <span class="button-label">Edit</span>
         </button>
         <button class="shopping-item-delete js-item-delete">
-            <span class="button-label">delete</span>
+            <span class="button-label">Delete</span>
         </button>
       </div>
     </li>`;
 };
 
-const renderShoppingList = function() {
-  renderDisplayToggler();
-  renderListItems();
-};
 
 const renderListItems = function() {
   let items = STORE.items;
@@ -124,6 +138,21 @@ const shoppingEventHelpers = {
     const input = userInputField.val();
     userInputField.val('');
     return input;
+  },
+  renderItemEditForm: function(listItemNode, itemIndex) {
+    // Grab elements necessary to construct form
+    let itemTitleField = listItemNode.find('.js-shopping-item');
+    let itemName = STORE.items[itemIndex].name;
+    // Create form HTML
+    let html = `
+      <form id="js-shopping-list-edit-form">
+        <input type="text" name="shopping-list-editor" class="js-shopping-list-edit" placeholder="${itemName}">
+        <button type="submit">Save</button>
+      </form>
+    `;
+    // Set 
+    itemTitleField.html(html);
+    $('.js-shopping-list-edit').val(itemName);
   }
 };
 
@@ -135,7 +164,7 @@ const listManipulationListeners = {
     const userInput = shoppingEventHelpers.fetchUserInput(userInputField);
     // push input to database
     STORE.items.push({ name: userInput, completed: false });
-    // render new state
+    // render new view
     renderShoppingList();
   },
 
@@ -156,7 +185,26 @@ const listManipulationListeners = {
     // Render new view
     renderShoppingList();
   },
-  // handleItemEdit: function(e) {},
+  handleItemEdit: function(e) {
+    // Return back to normal list view if `edit` is pressed
+    // again with form already displaying
+    if ($('#js-shopping-list-edit-form').length > 0) renderShoppingList();
+
+    let listItemParent = $(e.currentTarget).closest('li');
+    let itemIndex = shoppingEventHelpers.fetchItemIndex(listItemParent);
+    // Render the item edit form in place of the item name
+    shoppingEventHelpers.renderItemEditForm(listItemParent, itemIndex);
+    // Listen for form input
+    $('#js-shopping-list-edit-form').submit(e => {
+      // Grab user input
+      e.preventDefault();
+      let userInput = shoppingEventHelpers.fetchUserInput($('.js-shopping-list-edit'));
+      // Modify the item's name in STORE
+      STORE.items[itemIndex].name = userInput;
+      // Render new view
+      renderShoppingList();
+    });
+  }
 };
 
 const bindListManipulationListeners = function() {
@@ -167,7 +215,7 @@ const bindListManipulationListeners = function() {
   // handleItemDelete
   $('.js-shopping-list').on('click', '.js-item-delete',listManipulationListeners.handleItemDelete);
   // handleItemEdit
-  // $('.js-shopping-list').on('click', '.js-item-delete',listManipulationListeners.handleItemEdit);
+  $('.js-shopping-list').on('click', '.js-item-edit',listManipulationListeners.handleItemEdit);
 };
 
 const listFilteringListeners = {
@@ -200,6 +248,7 @@ const listFilteringListeners = {
     // Store search input in STATE.currentSearch
     STORE.currentSearch = userInput;
     // Set the correct state
+    if (userInput === '') return listFilteringListeners.handleClearSearchButton();
     switch(STORE.state) {
       case 'all':
       case 'search':
@@ -215,6 +264,32 @@ const listFilteringListeners = {
         break;
     }
     // Render new view
+    $('.js-clear-search').removeClass('hidden');
+    renderShoppingList();
+  },
+
+  handleClearSearchButton: function() {
+    const clearSearchButton = $('.js-clear-search');
+    // hide search button
+    $(clearSearchButton).addClass('hidden');
+    // remove the search from the state
+    STORE.currentSearch = null;
+    // set the state to a new, searchless state
+    switch(STORE.state) {
+      case 'all':
+      case 'search':
+        STORE.state = 'all';
+        break;
+      case 'active':
+      case 'searchActive':
+        STORE.state = 'active';
+        break;
+      case 'completed':
+      case 'searchCompleted':
+        STORE.state = 'completed';
+        break;
+    }
+    // render new view
     renderShoppingList();
   }
 };
@@ -225,6 +300,8 @@ const bindListFilteringListeners = function() {
   $('#js-shopping-list-filter').on('click', '.js-filter-radio', listFilteringListeners.handleDisplayFilterToggle);
   // handleSearchInput
   $('#js-shopping-list-search').on('submit',listFilteringListeners.handleSearchInput);
+  // handleClearSearchButton
+  $('#js-shopping-list-search').on('click', '.js-clear-search', listFilteringListeners.handleClearSearchButton);
 };
 
 const handleShoppingList = function() {
