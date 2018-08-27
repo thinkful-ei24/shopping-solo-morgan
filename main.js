@@ -1,11 +1,27 @@
-const STATE = {
+// POSSIBLE STATES:
+  // `all`: display all items
+  // `checked`/: display checked only
+  // `unchecked`: display unchecked only
+  // `search`: filtered by search term
+  // `checkedSearch`: search through unchecked items
+  // `uncheckedSearch`: search through checked items
+
+// POSSIBLE ACTIONS:
+  // Add/Remove/Edit list item
+  // Show all items
+  // Filter by checked items only
+  // Filter by unchecked items only
+  // Search term
+
+const STORE = {
   items: [
     {name: "apples", completed: false},
     {name: "oranges", completed: false},
     {name: "milk", completed: true},
     {name: "bread", completed: false}
   ],
-  displayCompleted: true
+  state: 'all',
+  currentSearch: null
 };
 
 const generateListItemHTML = function(item, itemIndex) {
@@ -23,127 +39,198 @@ const generateListItemHTML = function(item, itemIndex) {
     </li>`;
 };
 
-const generateCompletedDisplayHTML = function() {
-  return `
-    <input class="js-display-completed-items" type="checkbox" name="shopping-list-display-completed" ${STATE.displayCompleted ? 'checked' : ''}>
-    <label for="shopping-list-display-completed">Display completed items</label>
-  `;
-};
-
-const generateUncompletedListItemHTML = function(html, item, itemIndex) {
-  if (item.completed === false) {
-    html += `
-      <li class="js-item-index-element" data-item-index="${itemIndex}">
-        <span class="shopping-item js-shopping-item">${item.name}</span>
-        <div class="shopping-item-controls">
-          <button class="shopping-item-toggle js-item-toggle">
-              <span class="button-label">check</span>
-          </button>
-          <button class="shopping-item-delete js-item-delete">
-              <span class="button-label">delete</span>
-          </button>
-        </div>
-      </li>`;
-    }
-    return html;
-};
-
-
 const renderShoppingList = function() {
-  // Render display toggler
-  $('#shopping-list-completed-toggler').html(generateCompletedDisplayHTML());
-  // Render items
-  let items = STATE.items;
-  if (STATE.displayCompleted) {
-    $('.js-shopping-list').html(items.map(generateListItemHTML).join(''));  
-  }
-  else {
-    $('.js-shopping-list').html(items.reduce(generateUncompletedListItemHTML, ''));
-  }
-  
+  renderDisplayToggler();
+  renderListItems();
 };
 
-const shoppingListeners = {
-  helpers: {
-    fetchItemIndex: function(listItemNode) {
-      return $(listItemNode).closest('li').data('itemIndex');
-    },
-    fetchUserInput: function() {
-      
-    }
+const renderListItems = function() {
+  let items = STORE.items;
+  let list = $('.js-shopping-list');
+  switch(STORE.state) {
+    case 'all':
+      items = items.map(generateListItemHTML).join('');
+      list.html(items);
+      break;
+    case 'active':
+      items = 
+        items
+          .filter(item => item.completed === false)
+          .map(generateListItemHTML)
+          .join('');
+      list.html(items);
+      break;
+    case 'completed':
+      items = 
+        items
+          .filter(item => item.completed === true)
+          .map(generateListItemHTML)
+          .join('');
+      list.html(items);
+      break;
+    case 'search':
+      items = 
+      items
+        .filter(item => item.name.includes(STORE.currentSearch))
+        .map(generateListItemHTML)
+        .join('');
+      list.html(items);
+      break;
+    case 'activeSearch':
+      items = 
+      items
+        .filter(item => item.completed === false && item.name.includes(STORE.currentSearch))
+        .map(generateListItemHTML)
+        .join('');
+    list.html(items);
+    break;
+    case 'completedSearch':
+      items = 
+      items
+        .filter(item => item.completed === true && item.name.includes(STORE.currentSearch))
+        .map(generateListItemHTML)
+        .join('');
+      list.html(items);
+      break;
+  }
+};
+
+const renderDisplayToggler = function() {
+  let radioButtons = $('.js-filter-radio');
+  // Uncheck all radio buttons
+  $(radioButtons).prop('checked', false);
+  // Set the correct radio state
+  switch(STORE.state) {
+    case 'all':
+    case 'search':
+      $(radioButtons).filter('#js-filter-all').prop('checked', true);
+      break;
+    case 'active':
+    case 'activeSearch':
+      $(radioButtons).filter('#js-filter-active').prop('checked', true);
+      break;
+    case 'completed':
+    case 'completedSearch':
+      $(radioButtons).filter('#js-filter-completed').prop('checked', true);
+      break;
+  }
+};
+
+const shoppingEventHelpers = {
+  fetchItemIndex: function(listItemNode) {
+    return $(listItemNode).closest('li').data('itemIndex');
   },
-  // handleUserInput
-  handleAddItemInput: function(e) {    
-    // fetch user input
-    e.preventDefault();
-    const userInputField = $('.js-shopping-list-entry');
-    const userInput = userInputField.val();
+  fetchUserInput: function(userInputField) {
+    const input = userInputField.val();
     userInputField.val('');
+    return input;
+  }
+};
+
+const listManipulationListeners = {
+  handleAddItemInput: function(e) {   
+    e.preventDefault(); 
+    // fetch user input
+    const userInputField = $('.js-shopping-list-entry');
+    const userInput = shoppingEventHelpers.fetchUserInput(userInputField);
     // push input to database
-    STATE.items.push({ name: userInput, completed: false });
+    STORE.items.push({ name: userInput, completed: false });
     // render new state
     renderShoppingList();
   },
 
-  handleItemCompletedState: function(e) {
+  handleItemCompletedToggle: function(e) {
     // Grab item index from the DOM
-    let itemIndex = shoppingListeners.helpers.fetchItemIndex(e.currentTarget);
+    let itemIndex = shoppingEventHelpers.fetchItemIndex(e.currentTarget);
     // Toggle item's completed state
-    STATE.items[itemIndex].completed = !STATE.items[itemIndex].completed;
+    STORE.items[itemIndex].completed = !STORE.items[itemIndex].completed;
     // Render new view
     renderShoppingList();
   },
 
   handleItemDelete: function(e) {
     // Grab item index from the DOM
-    let itemIndex = shoppingListeners.helpers.fetchItemIndex(e.currentTarget);
+    let itemIndex = shoppingEventHelpers.fetchItemIndex(e.currentTarget);
     // Delete item from database
-    delete STATE.items[itemIndex];
+    delete STORE.items[itemIndex];
     // Render new view
     renderShoppingList();
   },
+  // handleItemEdit: function(e) {},
+};
 
-  handleItemEdit: function(e) {},
+const bindListManipulationListeners = function() {
+  // handleAddItemInput
+  $('#js-shopping-list-form').on('submit', listManipulationListeners.handleAddItemInput);
+  // handleItemCompletedToggle
+  $('.js-shopping-list').on('click', '.js-item-toggle',listManipulationListeners.handleItemCompletedToggle);
+  // handleItemDelete
+  $('.js-shopping-list').on('click', '.js-item-delete',listManipulationListeners.handleItemDelete);
+  // handleItemEdit
+  // $('.js-shopping-list').on('click', '.js-item-delete',listManipulationListeners.handleItemEdit);
+};
 
-  handleCompletedDisplayToggle: function(e) {
-    STATE.displayCompleted = STATE.displayCompleted ? false : true;
+const listFilteringListeners = {
+  handleDisplayFilterToggle: function(e) {
+    // Changes state based on the filter radio pressed 
+    // and if there is a search underway
+    switch(e.currentTarget.id) {
+      case 'js-filter-all':
+        if (STORE.currentSearch === null) STORE.state = 'all';
+        else STORE.state = 'search';
+        break;
+      case 'js-filter-active':
+        if (STORE.currentSearch === null) STORE.state = 'active';
+        else STORE.state = 'searchActive';
+        break;      
+      case 'js-filter-completed':
+        if (STORE.currentSearch === null) STORE.state = 'completed';
+        else STORE.state = 'searchCompleted';
+        break;      
+    }
+    // Renders shopping list with new state flag
     renderShoppingList();
   },
 
-  handleSearchInput: function(e) {
-    e.preventDefault();
-    console.log('hi!');
-  }
+  // handleUserSearch: function(e) {
+  //   // Grab user input
+  //   e.preventDefault();
+  //   let userInputField = $('.js-shopping-list-search');
+  //   let userInput = shoppingEventHelpers.fetchUserInput(userInputField);
+  //   // Store user input at STORE.currentSearch
+  //   STORE.currentSearch = userInput;
+  //   // Set the new state
+  //   switch(STORE.state) {
+  //     case 'all':
+  //     case 'search':
+  //       STORE.state = 'search';
+  //       break;
+  //     case 'active':
+  //     case 'searchActive':
+  //       STORE.state = 'searchActive';
+  //       break;
+  //     case 'completed':
+  //     case 'searchCompleted':
+  //       STORE.state = 'searchCompleted';
+  //       break;
+  //   }
+  //   // render new view
+  //   renderShoppingList();
+  // }
 };
 
 
-const bindShoppingListeners = function() {
-  // handleAddItemInput
-  $('#js-shopping-list-form').on('submit', shoppingListeners.handleAddItemInput);
-  // handleItemCompletedState
-  $('.js-shopping-list').on('click', '.js-item-toggle',shoppingListeners.handleItemCompletedState);
-  // handleItemDelete
-  $('.js-shopping-list').on('click', '.js-item-delete',shoppingListeners.handleItemDelete);
-  // handleCompletedDisplayToggle
-  $('#shopping-list-completed-toggler').on('change', '.js-display-completed-items', shoppingListeners.handleCompletedDisplayToggle);
-  // handleItemEdit
-  // $('.js-shopping-list').on('click', '.js-item-delete',shoppingListeners.handleItemEdit);
-  // handleSearchInput
-  $('#js-shopping-list-search').on('submit', shoppingListeners.handleSearchInput);
+const bindListFilteringListeners = function() {
+  // handleDisplayFilterToggle
+  $('#js-shopping-list-filter').on('click', '.js-filter-radio', listFilteringListeners.handleDisplayFilterToggle);
+  // // handleUserSearch
+  // $('#js-shopping-list-search').on('submit', listFilteringListeners.handleUserSearch);
 };
 
-// Users should be able to:
-    // Add an item to the shopping list
-    // Check an item on the shopping list
-    // Remove an item from the shopping list
-// ------------------------------------------------------------------------
-    // Press a switch/checkbox to toggle between displaying all items or displaying only items that are uncompleted
-    // Type in a search term and the displayed list will be filtered by item names only containing that search term
-    // Edit the title of an item
-
-function handleShoppingList() {
+const handleShoppingList = function() {
   renderShoppingList();
-  bindShoppingListeners();
-}
+  bindListManipulationListeners();
+  bindListFilteringListeners();
+};
 
-$(handleShoppingList);
+$(handleShoppingList());

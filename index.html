@@ -19,8 +19,19 @@
             <input type="text" name="shopping-list-search" class="js-shopping-list-search" placeholder="Search">
             <button type="submit">Search</button>
         </form>
-        <form id="shopping-list-completed-toggler">
-        </form>
+        <!-- <form id="shopping-list-completed-toggler">
+        </form> -->
+        <form id="js-shopping-list-filter">
+            <fieldset>
+                <legend>Show</legend>
+                    <input class="js-filter-radio js-filter-all" type="radio" id="js-filter-all" name="filter-all">
+                    <label class="display-filter" for="filter-all">All</label>
+                    <input class="js-filter-radio js-filter-active" type="radio" id="js-filter-active" name="filter-display">
+                    <label class="display-filter" for="filter-completed">Active</label>
+                    <input class="js-filter-radio js-filter-completed" type="radio" id="js-filter-completed" name="filter-display">
+                    <label class="display-filter" for="filter-display">Completed</label>
+            </fieldset>
+            </form>
         <ul class="shopping-list js-shopping-list">
         </ul>
     </div>

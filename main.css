@@ -62,3 +62,13 @@ input {
 input::placeholder {
   font-style: italic;
 }
+
+#js-shopping-list-filter fieldset {
+  max-width: 600px;
+  margin: 0 auto;
+  border: 1px solid grey;
+}
+
+.display-filter {
+  margin-right: 10px;
+}
