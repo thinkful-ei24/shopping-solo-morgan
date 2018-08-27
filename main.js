@@ -6,6 +6,13 @@
   // `completed`
   // `searchCompleted`
 
+// POSSIBLE ACTIONS:
+  // Add/Remove/Edit list item
+  // Show all items
+  // Filter by checked items only
+  // Filter by unchecked items only
+  // Search term
+
 // switch(STORE.state) {
 //   case 'all':
 //   case 'search':
@@ -15,12 +22,7 @@
 //   case 'searchCompleted':
 // }
 
-// POSSIBLE ACTIONS:
-  // Add/Remove/Edit list item
-  // Show all items
-  // Filter by checked items only
-  // Filter by unchecked items only
-  // Search term
+
 
 const STORE = {
   items: [
